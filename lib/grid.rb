@@ -1,5 +1,5 @@
 class Grid
-  Point = Struct.new(:x, :y)
+  attr_reader :grid, :cells
   def initialize(window:)
     @window = window
     @font = Gosu::Font.new(24)
@@ -13,14 +13,17 @@ class Grid
               [false, false, false]
             ]
     @win_scenarios =[
+                      # ROWS
                       [point(0,0), point(1,0), point(2,0)],
                       [point(0,1), point(1,1), point(2,1)],
                       [point(0,2), point(1,2), point(2,2)],
 
+                      # COLUMNS
                       [point(0,0), point(0,1), point(0,2)],
                       [point(1,0), point(1,1), point(1,2)],
                       [point(2,0), point(2,1), point(2,2)],
 
+                      # DIAGONALS
                       [point(0,0), point(1,1), point(2,2)],
                       [point(0,2), point(1,1), point(2,0)]
                     ]
@@ -31,6 +34,9 @@ class Grid
     @player_index = 0
     @game_over = false
     @turn = @players[@player_index]
+
+    @human = @players[@player_index]
+    @ai = Ai.new(grid: self, player: @players[@player_index+1])
   end
 
   def build_cells
@@ -85,6 +91,10 @@ class Grid
       @title = "Draw"
     end
 
+    if @turn == @ai.player && @cells.count != reserved && !@game_over
+      @ai.your_turn
+    end
+
     catch(:win_found) do
       check_win_scenarios unless @game_over
     end
@@ -113,14 +123,18 @@ class Grid
   end
 
   def notify(cell)
-    @grid[cell.point.x][cell.point.y] = @turn
-    cell.player = @turn
-    @player_index +=1 if @player_index < @players.count
-    @player_index = 0 if @player_index >= @players.count
-    @turn = @players[@player_index]
+    unless @grid[cell.point.x][cell.point.y]
+      @grid[cell.point.x][cell.point.y] = @turn
+      cell.player = @turn
+      @player_index +=1 if @player_index < @players.count
+      @player_index = 0 if @player_index >= @players.count
+      @turn = @players[@player_index]
+    end
   end
 
   def button_up(id)
-    @cells.each {|c| c.button_up(id)}
+    if @turn == @human
+      @cells.each {|c| c.button_up(id)}
+    end
   end
 end
