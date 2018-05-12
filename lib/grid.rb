@@ -13,22 +13,23 @@ class Grid
               [false, false, false]
             ]
     @win_scenarios =[
-                      [[0,0], [1,0], [2,0]],
-                      [[0,1], [1,1], [2,1]],
-                      [[0,2], [1,2], [2,2]],
+                      [point(0,0), point(1,0), point(2,0)],
+                      [point(0,1), point(1,1), point(2,1)],
+                      [point(0,2), point(1,2), point(2,2)],
 
-                      [[0,0], [0,1], [0,1]],
-                      [[1,0], [1,1], [1,2]],
-                      [[2,0], [2,1], [2,2]],
+                      [point(0,0), point(0,1), point(0,1)],
+                      [point(1,0), point(1,1), point(1,2)],
+                      [point(2,0), point(2,1), point(2,2)],
 
-                      [[0,0], [1,1], [2,2]],
-                      [[0,2], [1,1], [2,0]],
+                      [point(0,0), point(1,1), point(2,2)],
+                      [point(0,2), point(1,1), point(2,0)]
                     ]
     @cells = []
     build_cells
 
-    @players = [:x, :o]
+    @players = [:X, :O]
     @player_index = 0
+    @game_over = false
     @turn = @players[@player_index]
   end
 
@@ -56,7 +57,7 @@ class Grid
   def draw
     #Title
     @font.draw(@title, @window.width/2-@font.text_width(@title)/2, @y_padding/2-@font.height/2, 10)
-    @font.draw(@turn.to_s, 10, 10, 10)
+    @font.draw("Turn: #{@turn.to_s}", 10, 10, 10)
     # BACKGROUND
     Gosu.draw_rect(@x_padding, @y_padding, @window.width-(@x_padding*2), @window.height-(@y_padding*2), Gosu::Color.rgb(50,75,100))
     # LINES
@@ -80,8 +81,34 @@ class Grid
       end
     end
 
-    if @cells.count == reserved
-      @title = "Game Over"
+    if @cells.count == reserved && !@game_over
+      @title = "Draw"
+    end
+
+    catch(:win_found) do
+      check_win_scenarios unless @game_over
+    end
+  end
+
+  def check_win_scenarios
+    @players.each do |player|
+      @win_scenarios.each_with_index do |scenario, scenario_index|
+        matches = 0
+        scenario.each do |point|
+          if @grid[point.x][point.y] == player
+            matches+=1
+          end
+        end
+
+        if matches == scenario.size
+          puts "matches: #{matches}- Win? #{ matches == scenario.size} - Scenerio: #{scenario_index}"
+          puts "WIN"
+          @title = "#{player} Won!"
+          @game_over = true
+          @cells.each {|cell| cell.reserved = true}
+          throw(:win_found)
+        end
+      end
     end
   end
 

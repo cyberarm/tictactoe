@@ -3,7 +3,7 @@ class Cell
   def initialize(x, y, width, height, point)
     @x,@y,@width,@height,@point = x,y,width,height,point
     @reserved = false
-    @player = "?"
+    @player = ""
 
     @cell_font = Gosu::Font.new(height-10, name: "Consolas")
 
@@ -31,6 +31,10 @@ class Cell
 
   def player=(symbol)
     @player = symbol.to_s
+  end
+
+  def reserved=(boolean)
+    @reserved = boolean
   end
 
   def mouse_over?
