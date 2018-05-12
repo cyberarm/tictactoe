@@ -91,12 +91,13 @@ class Grid
       @title = "Draw"
     end
 
-    if @turn == @ai.player && @cells.count != reserved && !@game_over
-      @ai.your_turn
-    end
 
     catch(:win_found) do
       check_win_scenarios unless @game_over
+    end
+
+    if @turn == @ai.player && @cells.count != reserved && !@game_over
+      @ai.your_turn
     end
   end
 
@@ -113,7 +114,8 @@ class Grid
         if matches == scenario.size
           puts "matches: #{matches}- Win? #{ matches == scenario.size} - Scenerio: #{scenario_index}"
           puts "WIN"
-          @title = "#{player} Won!"
+          @title = "#{Etc.getlogin} Won!" if player == @human
+          @title = "#{@ai.name} Won!" if player != @human
           @game_over = true
           @cells.each {|cell| cell.reserved = true}
           throw(:win_found)
@@ -123,8 +125,8 @@ class Grid
   end
 
   def notify(cell)
-    unless @grid[cell.point.x][cell.point.y]
-      @grid[cell.point.x][cell.point.y] = @turn
+    unless @grid[cell.point.y][cell.point.x]
+      @grid[cell.point.y][cell.point.x] = @turn
       cell.player = @turn
       @player_index +=1 if @player_index < @players.count
       @player_index = 0 if @player_index >= @players.count

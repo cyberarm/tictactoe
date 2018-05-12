@@ -1,3 +1,5 @@
+require "pp"
+require "etc"
 require "gosu"
 
 require_relative "lib/display"
