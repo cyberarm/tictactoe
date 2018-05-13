@@ -1,6 +1,7 @@
 require "pp"
 require "etc"
 require "gosu"
+require "securerandom"
 
 require_relative "lib/display"
 require_relative "lib/grid"

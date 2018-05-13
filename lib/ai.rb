@@ -34,7 +34,7 @@ class Ai
     end
 
     if my_grid.size > 0
-      decision = my_grid[rand(0..my_grid.size-1)]
+      decision = my_grid[SecureRandom.random_number(0..my_grid.size-1)]
 
       cell = @grid.cells.detect {|cell| if cell.point.x == decision.x && cell.point.y == decision.y; true; end}
 
