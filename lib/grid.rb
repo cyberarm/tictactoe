@@ -36,7 +36,9 @@ class Grid
     @turn = @players[@player_index]
 
     @human = @players[@player_index]
-    @ai = Ai.new(grid: self, player: @players[@player_index+1])
+    unless ARGV.join.include?("--1v1")
+      @ai = Ai.new(grid: self, player: @players[@player_index+1])
+    end
   end
 
   def build_cells
@@ -96,7 +98,7 @@ class Grid
       check_win_scenarios unless @game_over
     end
 
-    if @turn == @ai.player && @cells.count != reserved && !@game_over
+    if @ai && @turn == @ai.player && @cells.count != reserved && !@game_over
       @ai.your_turn
     end
   end
@@ -114,8 +116,12 @@ class Grid
         if matches == scenario.size
           puts "matches: #{matches}- Win? #{ matches == scenario.size} - Scenerio: #{scenario_index}"
           puts "WIN"
-          @title = "#{Etc.getlogin} Won!" if player == @human
-          @title = "#{@ai.name} Won!" if player != @human
+          if @ai
+            @title = "#{Etc.getlogin} Won!" if player == @human
+            @title = "#{@ai.name} Won!" if player != @human
+          else
+            @title = "#{@turn} Won!"
+          end
           @game_over = true
           @cells.each {|cell| cell.reserved = true}
           throw(:win_found)
@@ -135,7 +141,7 @@ class Grid
   end
 
   def button_up(id)
-    if @turn == @human
+    if @turn == @human || !@ai
       @cells.each {|c| c.button_up(id)}
     end
   end
