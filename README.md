@@ -14,3 +14,5 @@ Add `--1v1` for local multiplayer
 
 `ruby tictactoe.rb --1v1`
 
+# Screenshot
+![Screenshot of a tictactoe game, a draw.](https://raw.githubusercontent.com/cyberarm/tictactoe/master/media/screenshot.png)
