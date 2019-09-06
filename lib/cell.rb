@@ -16,7 +16,7 @@ class Cell
   def draw
     if @reserved
       Gosu.draw_rect(@x, @y, @width, @height, @reserved_color)
-      @cell_font.draw_text(@player, @x + (@width / 2) - (@cell_font.text_width(@player) / 2), y, 10)
+      @cell_font.draw_text(@player, @x + (@width / 2) - (@cell_font.text_width(@player) / 2), @y - ((@cell_font.height / 2) - @height / 2), 10)
     elsif mouse_over? && Gosu.button_down?(Gosu::MsLeft)
       Gosu.draw_rect(@x, @y, @width, @height, @active_color)
     elsif mouse_over?
