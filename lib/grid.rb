@@ -1,14 +1,14 @@
 class Grid
   attr_reader :cells, :win_scenarios
-  def initialize(window:)
+  def initialize(window:, grid_size: 3, cell_size: 64)
     @window = window
+    @grid_size = grid_size
+    @cell_size = cell_size
+
     @font = Gosu::Font.new(24)
     @title= "Tic-Tac-Toe"
-    @x_padding = (@window.width/4)/2
-    @y_padding = (@window.height/4)/2
 
-    @columns = 3
-    @rows = 3
+    raise "Grid grid_size must be divisible by 3" unless (@grid_size.to_f / 3) % 1 <= 0.0001
 
     @win_scenarios = []
     build_win_scenarios
@@ -29,9 +29,9 @@ class Grid
 
   def build_win_scenarios
     # ROWS
-    @rows.times do |y|
+    @grid_size.times do |y|
       scenario = []
-      @columns.times do |x|
+      @grid_size.times do |x|
         scenario << point(x, y)
       end
 
@@ -39,9 +39,9 @@ class Grid
     end
 
     # COLUMNS
-    @rows.times do |x|
+    @grid_size.times do |x|
       scenario = []
-      @columns.times do |y|
+      @grid_size.times do |y|
         scenario << point(x, y)
       end
 
@@ -52,11 +52,11 @@ class Grid
     x1 = 0
     y1 = 0
     x2 = 0
-    y2 = @rows    - 1
+    y2 = @grid_size - 1
     _one = []
     _two = []
 
-    @columns.times do |i|
+    @grid_size.times do |i|
       _one << point(x1 + i, y1 + i)
       _two << point(x2 + i, y2 - i)
     end
@@ -67,19 +67,13 @@ class Grid
 
   def build_cells
     # Top Row
-    @cells << Cell.new(@x_padding, @y_padding, (@x_padding*2), (@y_padding*2), point(0,0))
-    @cells << Cell.new(2+@x_padding*3.0, @y_padding, (@x_padding*2)-2, (@y_padding*2), point(1,0))
-    @cells << Cell.new(2+@x_padding*5.0, @y_padding, (@x_padding*2)-2, (@y_padding*2), point(2,0))
+    size = @cell_size * 2
 
-    # Middle Row
-    @cells << Cell.new(@x_padding, 2+@y_padding*3.0, (@x_padding*2), (@y_padding*2)-2, point(0,1))
-    @cells << Cell.new(2+@x_padding*3.0, 2+@y_padding*3.0, (@x_padding*2)-2, (@y_padding*2)-2, point(1,1))
-    @cells << Cell.new(2+@x_padding*5.0, 2+@y_padding*3.0, (@x_padding*2)-2, (@y_padding*2)-2, point(2,1))
-
-    # Bottom Row
-    @cells << Cell.new(@x_padding, 2+@y_padding*5.0, (@x_padding*2), (@y_padding*2)-2, point(0,2))
-    @cells << Cell.new(2+@x_padding*3.0, 2+@y_padding*5.0, (@x_padding*2)-2, (@y_padding*2)-2, point(1,2))
-    @cells << Cell.new(2+@x_padding*5.0, 2+@y_padding*5.0, (@x_padding*2)-2, (@y_padding*2)-2, point(2,2))
+    @grid_size.times do |y|
+      @grid_size.times do |x|
+        @cells << Cell.new((size - @cell_size) + x * size, (size - @cell_size) + y * size, size - 2, size - 2, point(x, y))
+      end
+    end
   end
 
   def point(x, y)
@@ -87,24 +81,29 @@ class Grid
   end
 
   def cell_at(point)
-    @cells.dig(@columns * point.y + point.x)
+    @cells.dig(@grid_size * point.y + point.x)
   end
 
   def draw
     #Title
-    @font.draw(@title, @window.width/2-@font.text_width(@title)/2, @y_padding/2-@font.height/2, 10)
-    @font.draw("Turn: #{@turn.to_s}", 10, 10, 10)
-    # BACKGROUND
-    Gosu.draw_rect(@x_padding, @y_padding, @window.width-(@x_padding*2), @window.height-(@y_padding*2), Gosu::Color.rgb(50,75,100))
-    # LINES
-    #   ROWS
-    Gosu.draw_rect(@x_padding, @y_padding*3.0, @window.width-(@x_padding*2), 2, Gosu::Color::BLACK)
-    Gosu.draw_rect(@x_padding, @y_padding*5.0, @window.width-(@x_padding*2), 2, Gosu::Color::BLACK)
-    #   COLS
-    Gosu.draw_rect(@x_padding*3.0, @y_padding, 2, @window.height-(@y_padding*2), Gosu::Color::BLACK)
-    Gosu.draw_rect(@x_padding*5.0, @y_padding, 2, @window.height-(@y_padding*2), Gosu::Color::BLACK)
+    @font.draw_text(@title, @window.width/2-@font.text_width(@title)/2, @cell_size/2-@font.height/2, 10)
+    @font.draw_text("Turn: #{@turn.to_s}", 10, 10, 10)
+
+    draw_backing
 
     @cells.each(&:draw)
+  end
+
+  def draw_backing
+    size = @cell_size * 2
+
+    Gosu.draw_rect(@cell_size, @cell_size, size * @grid_size - 2, size * @grid_size - 2, Gosu::Color.rgb(50,75,100))
+
+    (@grid_size - 1).times do |i|
+      Gosu.draw_rect(@cell_size, ((size - @cell_size) + i * size - 2) + size, size * @grid_size - 2, 2, Gosu::Color::BLACK)
+      Gosu.draw_rect(((size - @cell_size) + i * size - 2) + size, @cell_size, 2, size * @grid_size - 2, Gosu::Color::BLACK)
+
+    end
   end
 
   def update
