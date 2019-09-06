@@ -10,21 +10,9 @@ class Grid
     @columns = 3
     @rows = 3
 
-    @win_scenarios =[
-                      # ROWS
-                      [point(0,0), point(1,0), point(2,0)],
-                      [point(0,1), point(1,1), point(2,1)],
-                      [point(0,2), point(1,2), point(2,2)],
+    @win_scenarios = []
+    build_win_scenarios
 
-                      # COLUMNS
-                      [point(0,0), point(0,1), point(0,2)],
-                      [point(1,0), point(1,1), point(1,2)],
-                      [point(2,0), point(2,1), point(2,2)],
-
-                      # DIAGONALS
-                      [point(0,0), point(1,1), point(2,2)],
-                      [point(0,2), point(1,1), point(2,0)]
-                    ].freeze
     @cells = []
     build_cells
 
@@ -37,6 +25,44 @@ class Grid
     unless ARGV.join.include?("--1v1")
       @ai = CostAi.new(grid: self, player: @players[@player_index+1])
     end
+  end
+
+  def build_win_scenarios
+    # ROWS
+    @rows.times do |y|
+      scenario = []
+      @columns.times do |x|
+        scenario << point(x, y)
+      end
+
+      @win_scenarios << scenario.freeze
+    end
+
+    # COLUMNS
+    @rows.times do |x|
+      scenario = []
+      @columns.times do |y|
+        scenario << point(x, y)
+      end
+
+      @win_scenarios << scenario.freeze
+    end
+
+    # DIAGONALS
+    x1 = 0
+    y1 = 0
+    x2 = 0
+    y2 = @rows    - 1
+    _one = []
+    _two = []
+
+    @columns.times do |i|
+      _one << point(x1 + i, y1 + i)
+      _two << point(x2 + i, y2 - i)
+    end
+
+    @win_scenarios.push(_one.freeze, _two.freeze)
+    @win_scenarios.freeze
   end
 
   def build_cells
