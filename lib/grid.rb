@@ -1,5 +1,5 @@
 class Grid
-  attr_reader :grid, :cells
+  attr_reader :cells, :win_scenarios
   def initialize(window:)
     @window = window
     @font = Gosu::Font.new(24)
@@ -7,11 +7,9 @@ class Grid
     @x_padding = (@window.width/4)/2
     @y_padding = (@window.height/4)/2
 
-    @grid = [
-              [false, false, false],
-              [false, false, false],
-              [false, false, false]
-            ]
+    @columns = 3
+    @rows = 3
+
     @win_scenarios =[
                       # ROWS
                       [point(0,0), point(1,0), point(2,0)],
@@ -26,7 +24,7 @@ class Grid
                       # DIAGONALS
                       [point(0,0), point(1,1), point(2,2)],
                       [point(0,2), point(1,1), point(2,0)]
-                    ]
+                    ].freeze
     @cells = []
     build_cells
 
@@ -37,7 +35,7 @@ class Grid
 
     @human = @players[@player_index]
     unless ARGV.join.include?("--1v1")
-      @ai = Ai.new(grid: self, player: @players[@player_index+1])
+      @ai = CostAi.new(grid: self, player: @players[@player_index+1])
     end
   end
 
@@ -60,6 +58,10 @@ class Grid
 
   def point(x, y)
     return Point.new(x,y)
+  end
+
+  def cell_at(point)
+    @cells.dig(@columns * point.y + point.x)
   end
 
   def draw
@@ -89,7 +91,7 @@ class Grid
       end
     end
 
-    if @cells.count == reserved && !@game_over
+    if reserved == @cells.count && !@game_over
       @title = "Draw"
     end
 
@@ -108,7 +110,7 @@ class Grid
       @win_scenarios.each_with_index do |scenario, scenario_index|
         matches = 0
         scenario.each do |point|
-          if @grid[point.x][point.y] == player
+          if cell_at(point).player == player
             matches+=1
           end
         end
@@ -131,8 +133,8 @@ class Grid
   end
 
   def notify(cell)
-    unless @grid[cell.point.y][cell.point.x]
-      @grid[cell.point.y][cell.point.x] = @turn
+    unless cell_at(cell.point).reserved
+      cell.reserved = true
       cell.player = @turn
       @player_index +=1 if @player_index < @players.count
       @player_index = 0 if @player_index >= @players.count

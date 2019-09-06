@@ -1,5 +1,5 @@
 class Cell
-  attr_reader :x, :y, :width, :height, :point, :reserved
+  attr_reader :x, :y, :width, :height, :point, :player, :reserved
   def initialize(x, y, width, height, point)
     @x,@y,@width,@height,@point = x,y,width,height,point
     @reserved = false
@@ -30,7 +30,7 @@ class Cell
   end
 
   def player=(symbol)
-    @player = symbol.to_s
+    @player = symbol
   end
 
   def reserved=(boolean)
@@ -38,17 +38,13 @@ class Cell
   end
 
   def mouse_over?
-    if  $window.mouse_x.between?(@x, @x+@width) && $window.mouse_y.between?(@y, @y+@height)
-      true
-    else
-      false
-    end
+    $window.mouse_x.between?(@x, @x+@width) &&
+    $window.mouse_y.between?(@y, @y+@height)
   end
 
   def button_up(id)
     if id == Gosu::MsLeft
       if mouse_over? && !@reserved
-        @reserved = true
         $window.grid.notify(self)
       end
     end
