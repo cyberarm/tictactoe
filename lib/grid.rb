@@ -122,7 +122,7 @@ class Grid
             @title = "#{Etc.getlogin} Won!" if player == @human
             @title = "#{@ai.name} Won!" if player != @human
           else
-            @title = "#{@turn} Won!"
+            @title = "#{player} Won!"
           end
           @game_over = true
           @cells.each {|cell| cell.reserved = true}
